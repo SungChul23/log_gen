@@ -135,8 +135,8 @@ terraform apply
 
 ## 로드맵
 
-- [x] Terraform으로 Fargate 인프라 구성
-- [x] ECR 이미지 기반 ECS Task 실행 환경 구축
+- [x] Terraform으로 Fargate 인프라 구성 / 26.8.18
+- [x] ECR 이미지 기반 ECS Task 실행 환경 구축 / 26.8.18
 - [ ] ECS Service를 통한 상시 실행 및 오토스케일링
 - [ ] Airflow와 연동하여 생성된 로그를 정제/적재하는 파이프라인 구축
 
