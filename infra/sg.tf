@@ -1,7 +1,7 @@
 # ECS -> Cloudwatch => S3, Kinesis, . . . 외부 연결은 우선 X
 resource "aws_security_group" "fargate" {
   name        = "${var.project_name}-fargate-sg"
-  description = "외부 연결 없이 Fargate 전용"
+  description = "only Fargate"
   vpc_id      = aws_vpc.this.id
 
 

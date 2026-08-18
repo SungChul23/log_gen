@@ -17,7 +17,7 @@ variable "project_name" {
 variable "vpc_cidr" {
   description = "VPC CIDR, Fargate 전용"
   type        = string
-  default     = "10.0.0.0/16"
+  default     = "10.20.0.0/16"
 }
 
 variable "public_subnet_cidrs" {
