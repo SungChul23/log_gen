@@ -207,3 +207,102 @@ malformed_json
  L Dockerfile       : 컨테이너 기반이 되는 이미지 생성용, ECR 푸시됨
  L requirements.txt : 필요 패키지
 ```
+
+
+- 설치
+```
+# 루트 위치에서
+pip install -r generator/requirements.txt
+```
+
+# 스크립트 
+- setup.bat
+```
+  Terraform init
+      ↓
+  Terraform apply
+      ↓
+  ECR Repository 생성
+  ECS/Fargate 관련 인프라 생성
+      ↓
+  AWS ECR 로그인
+      ↓
+  Docker 이미지 Build
+      ↓
+  ECR에 latest 이미지 Push
+```
+
+- run-local.bat
+- 로컬 PC에서 로그 생성 (로컬 테스트)
+```
+  # 문법
+  scripts\run-local.bat [DOMAIN] [DURATION] [RPS] [CORRUPTION] [OUTPUT] [TIME_SCALE]
+
+  # 샘플 
+  scripts\run-local.bat finance 60 5 0.05 both 1
+
+  # 해석
+  finance 도메인 로그 생성
+  ↓
+  60초 동안 실행
+  ↓
+  평균 5 RPS 속도로 생성된다
+  ↓
+  5% 오엽 데이터를 구성
+  ↓
+  출력은 stdout, file, both(둘다)
+  file은 output 폴더 내부에 기록
+  ↓
+  시간 배율 조절은 1
+
+```
+
+- run-generator.bat
+  - AWS fargate에서 진행
+```
+  # 전체 옵션
+  scripts\run-generator.bat [DOMAIN] [DURATION] [BASE_RPS] [CORRUPTION_RATE] [TASK_COUNT] [REGION] [TIME_SCALE]
+
+  # 처리흐름
+
+  ┌──────────────────┐
+│   로컬 PC 명령    │
+│  (AWS CLI run-task) │
+└─────────┬─────────┘
+          │
+          ▼
+┌──────────────────┐
+│   AWS ECS API     │
+│  run-task 요청     │
+└─────────┬─────────┘
+          │
+          ▼
+┌──────────────────┐
+│   ECS 클러스터     │
+│  (실행 환경 제공)   │
+└─────────┬─────────┘
+          │
+          ▼
+┌──────────────────┐
+│  Fargate Task 가동  │
+│  (서버리스 컴퓨트)   │
+└─────────┬─────────┘
+          │
+          ▼
+┌──────────────────┐
+│  Docker Container  │
+│  (이미지 기반 실행)  │
+└─────────┬─────────┘
+          │
+          ▼
+┌──────────────────┐
+│  Python 로그 생성기 │
+│  (도메인별 이벤트 생성)│
+└─────────┬─────────┘
+          │
+          ▼
+┌──────────────────┐
+│  CloudWatch Logs   │
+│  (stdout → 자동 수집) │
+└──────────────────┘
+```
