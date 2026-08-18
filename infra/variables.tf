@@ -1,7 +1,7 @@
 variable "aws_region" {
   description = "AWS 리전"
   type        = string
-  default     = "us-east-1"
+  default     = "ap-northeast-2"
 }
 
 variable "project_name" {
@@ -40,13 +40,29 @@ variable "public_subnet_cidrs" {
 #############################
 
 # Fargate task CPU
-
-
+variable "task_cpu" {
+  deprecated = "CPU Unit -> 512 == 0.5 vCPU"
+  type = number
+  default = 512
+}
 
 # Fargate task MEM
-
+variable "task_mem" {
+  deprecated = "mem mib"
+  type = number
+  default = 1024
+}
 
 # Cloudwatch Log 보관 일수
-
+variable "log_retention_days" {
+    deprecated = "로그 1주일 보관"
+    type = number
+    default = 7
+}
 
 # ECS Task가 ECR 이미지 사용시 테그 -> latest
+variable "image_tag" {
+    deprecated = "task가 정의될때 참고하는 tag명"
+    type = string
+    default = "latest"
+}
