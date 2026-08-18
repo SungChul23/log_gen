@@ -25,7 +25,7 @@ variable "public_subnet_cidrs" {
   type        = list(string)
 
   # 멀티 AZ 염두
-  default = ["10.0.1.0/24", "10.0.2.0/24"]
+  default = ["10.20.1.0/24", "10.20.2.0/24"]
 
   # 유효성 검사
   validation {
