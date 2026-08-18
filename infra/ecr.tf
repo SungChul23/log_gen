@@ -22,13 +22,13 @@ resource "aws_ecr_lifecycle_policy" "generator" {
       {
         rulePriority = 1
         description  = "keep 20 images"
-        selection    = {
-          tagStatus  = "any" # 태그 타입 상관 없음
-          countType  = "imageCountMoreThan" # 20개 초과되면 액션 시작
-          countNumber = 20 # 20개만 유지
+        selection = {
+          tagStatus   = "any"                # 태그 타입 상관 없음
+          countType   = "imageCountMoreThan" # 20개 초과되면 액션 시작
+          countNumber = 20                   # 20개만 유지
         }
         # 삭제 행동
-        action  = {
+        action = {
           type = "expire"
         }
       }

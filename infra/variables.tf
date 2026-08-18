@@ -25,7 +25,7 @@ variable "public_subnet_cidrs" {
   type        = list(string)
 
   # 멀티 AZ 염두
-  default     = ["10.0.1.0/24", "10.0.2.0/24"]
+  default = ["10.0.1.0/24", "10.0.2.0/24"]
 
   # 유효성 검사
   validation {
@@ -42,27 +42,27 @@ variable "public_subnet_cidrs" {
 # Fargate task CPU
 variable "task_cpu" {
   deprecated = "CPU Unit -> 512 == 0.5 vCPU"
-  type = number
-  default = 512
+  type       = number
+  default    = 512
 }
 
 # Fargate task MEM
 variable "task_mem" {
   deprecated = "mem mib"
-  type = number
-  default = 1024
+  type       = number
+  default    = 1024
 }
 
 # Cloudwatch Log 보관 일수
 variable "log_retention_days" {
-    deprecated = "로그 1주일 보관"
-    type = number
-    default = 7
+  deprecated = "로그 1주일 보관"
+  type       = number
+  default    = 7
 }
 
 # ECS Task가 ECR 이미지 사용시 테그 -> latest
 variable "image_tag" {
-    deprecated = "task가 정의될때 참고하는 tag명"
-    type = string
-    default = "latest"
+  deprecated = "task가 정의될때 참고하는 tag명"
+  type       = string
+  default    = "latest"
 }
