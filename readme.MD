@@ -25,3 +25,41 @@
 - logs.tf         : ECS 컨테이너 내 발생 로그 → CloudWatch Log Group 지정 (log group, retention 등)
 - outputs.tf      : 생성 후 각종 정보(ECR URI, ECS 서비스명, 로그 그룹명 등) 추출
 
+# 테라폼 주요 명령어
+```
+> ~/infra
+> terraform init
+> terraform fmt
+> terraform vaildate
+> terraform plan
+> terraform apply
+```
+
+# 로그 생성기 (~/generator)
+## 로그 포멧 (공통)
+```json
+{
+  "schema_version": "1.0",
+  "record_type": "application_log",
+  "event_id": "...",
+  "trace_id": "...",
+  "run_id": "...",
+  "occurred_at": "2026-08-12T16:30:11.123+09:00",
+  "generated_at_utc": "2026-08-12T07:30:11.123+00:00",
+  "domain": "ecommerce",
+  "event_type": "order_created",
+  "service": {...},
+  "client": {...},
+  "request": {
+    "method": "POST",
+    "path": "/api/orders",
+    "request_bytes": 1234
+  },
+  "response": {
+    "status_code": 201,
+    "latency_ms": 287,
+    "response_bytes": 3590
+  },
+  "data": {... domain specific ...}
+}
+```
