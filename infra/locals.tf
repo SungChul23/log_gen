@@ -9,6 +9,6 @@ locals {
     # 기타 이름 설정
     cluster_name     = "${var.project_name}-cluster"
     task_family      =  "${var.project_name}-task"
-    repositroyt_name = "${var.project_name}-repo"
+    repository_name = "${var.project_name}-repo"
     log_group_name   = "${var.project_name}"
 }
