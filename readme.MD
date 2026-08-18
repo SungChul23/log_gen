@@ -37,6 +37,7 @@
 
 # 로그 생성기 (~/generator)
 ## 로그 포멧 (공통)
+- 서비스 요청에 따른 처리가 완료된후 로그로 기록하는 최종 필드를 포함한 데이터 샘플
 ```json
 {
   "schema_version": "1.0",
@@ -60,6 +61,32 @@
     "latency_ms": 287,
     "response_bytes": 3590
   },
-  "data": {... domain specific ...}
+  "data": {... domain specific ...}  <- 도메인별로 커스텀 구성
 }
 ```
+
+## 지원 도메인 및 이벤트 정의
+- domain으로 카테고리 설정
+- 각 도메인들을 이벤트 비율 조정, 시간대별로 발생량을 조절, 주요 필드 설정
+
+| DOMAIN | 주요 이벤트 예시 |
+|---|---|
+| `ecommerce` | product_view, search, add_to_cart, checkout, order_created, payment_completed |
+| `finance` | account_login, balance_inquiry, card_payment, transfer, deposit, withdrawal |
+| `smartfactory` | sensor_reading, equipment_state, quality_inspection, alarm, maintenance_event |
+| `game` | login, session_heartbeat, match_started, match_finished, item_purchase, quest_completed |    
+
+
+# 실제와 유사한 발생 간격
+- 고려 조건
+    - 시간대별 가중치
+    - 평일/주말 가중치
+    - 간혈적 등장 부스터 (트래픽 상승)
+    - . . .
+
+- EX)
+    - 이커머스 : 점심/저녁 시간대 증가, 주말 감소
+    - 금융 : 평일 주간 시간증가, 주말 감소
+    - 스마트팩토리 : 24시간 비교적 일정, 교대/주말 변화
+    - 게임 : 저녁/야간 피크, 주말 증가세 
+    - . . .
