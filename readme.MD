@@ -1,43 +1,73 @@
-# 목표
-- AWS Fargate를 이용한 log 생성기
-    - AWS Fargate
-        - EC2 사용/관리 X
-        - ECR에 등록된 이미지를 이용하여 ECS에 직접 컨테이너 실행 -> `서버리스`로 실행환경 제공 
-        - 비용 저렴
-    - 발생된 데이터
-        - 데이터 형태 : 요청 -> 서비스 대응 -> 응답 -> 합친 최종 log
-        - 데이터 저장 
-            - s3
-            - cloudwatch
-            - file
-            - 콘솔
+# log-gen
 
-# 인프라 구성
-- variables.tf    : 리전, 프로젝트명, CPU/MEM 등 구성 조정용 입력 변수 선언
-- version.tf      : Terraform 버전, AWS provider 버전 제약(required_providers, required_version)
-- provider.tf     : AWS provider 설정 (region, profile/credentials 등)
-- locals.tf       : 테라폼에 사용하는 공통값, 태그, 프로젝트명 등 계산된 상수 정의
-- vpc.tf          : 전용 네트워크, VPC, Subnet, IGW, RT, SG, AZ, NAT(우선 제외)
-- sg.tf           : 보안그룹 (우선 외부 연결 X) -> ingress 미지정 
-- iam.tf          : Fargate Task Execution Role(ECR 이미지 GET, CloudWatch 로그 기록 권한) + Task Role(태스크 자체 런타임 권한, 필요 시)
-- ecr.tf          : log 생성용 컨테이너 이미지 저장 리포지토리
-- ecs.tf          : ECS 클러스터, Task Definition, Service 등 Fargate 실행 환경 정의
-- logs.tf         : ECS 컨테이너 내 발생 로그 → CloudWatch Log Group 지정 (log group, retention 등)
-- outputs.tf      : 생성 후 각종 정보(ECR URI, ECS 서비스명, 로그 그룹명 등) 추출
+AWS Fargate 기반의 실전형 로그 생성기입니다. 여러 도메인(이커머스, 금융, 스마트팩토리, 게임)에서 발생할 법한 "요청 → 처리 → 응답" 흐름의 애플리케이션 로그를 실제와 유사한 패턴으로 지속 생성하여, 이후 데이터 엔지니어링 파이프라인(Airflow 등)의 입력 데이터로 활용하는 것을 목표로 합니다.
 
-# 테라폼 주요 명령어
+## 목표
+
+- **AWS Fargate**를 이용한 로그 생성기 구축
+  - EC2를 직접 사용/관리하지 않는 서버리스 컴퓨트 환경
+  - ECR에 등록된 컨테이너 이미지를 ECS Task로 직접 실행
+  - 사용한 리소스(vCPU/메모리)만큼만 과금되는 구조
+- 생성된 로그는 아래와 같은 대상으로 저장 가능하도록 설계
+  - S3
+  - CloudWatch Logs
+  - 로컬 파일
+  - 콘솔(stdout)
+
+## 아키텍처
+
 ```
-> ~/infra
-> terraform init
-> terraform fmt
-> terraform vaildate
-> terraform plan
-> terraform apply
+[ECR: 컨테이너 이미지 저장]
+        ↓
+[ECS Task Definition: Fargate 실행 스펙 정의]
+        ↓
+[ECS Cluster + Fargate: 서버리스로 컨테이너 실행]
+        ↓
+[로그 생성기 컨테이너 동작]
+        ↓
+[CloudWatch Logs / S3 등으로 로그 적재]
 ```
 
-# 로그 생성기 (~/generator)
-## 로그 포멧 (공통)
-- 서비스 요청에 따른 처리가 완료된후 로그로 기록하는 최종 필드를 포함한 데이터 샘플
+- 컴퓨트: **AWS Fargate** (EC2 관리 불필요, ECS Task 단위로 실행)
+- 네트워크: 전용 VPC + 퍼블릭 서브넷(멀티 AZ) + IGW (NAT 미사용, 우선 제외)
+- 이미지 저장소: ECR (Task가 참조하는 컨테이너 이미지)
+- 권한: IAM Task Execution Role (ECR 이미지 GET, CloudWatch 로그 기록)
+- 로그: CloudWatch Log Group (retention 설정)
+
+## 인프라 구성 (Terraform)
+
+```
+infra/
+├── variables.tf   # 리전, 프로젝트명, CPU/MEM 등 입력 변수
+├── version.tf     # Terraform / AWS Provider 버전 제약
+├── provider.tf    # AWS Provider 설정 (region 등)
+├── locals.tf      # 공통값, 태그, 프로젝트명 등 계산된 상수
+├── vpc.tf         # VPC, Subnet, IGW, RT, AZ (NAT 우선 제외)
+├── sg.tf          # 보안그룹 (우선 외부 인바운드 미허용)
+├── iam.tf         # ECS Task Execution Role / Task Role
+├── ecr.tf         # 로그 생성기 컨테이너 이미지 저장소
+├── ecs.tf         # ECS 클러스터, Task Definition, Service
+├── logs.tf        # CloudWatch Log Group 설정
+└── outputs.tf     # ECR URI, 서비스명, 로그 그룹명 등 출력
+```
+
+### 실행 명령어
+
+```bash
+cd infra
+terraform init
+terraform fmt
+terraform validate
+terraform plan
+terraform apply
+```
+
+## 로그 생성기 (`generator/`)
+
+### 로그 포맷 (공통 스키마)
+
+모든 도메인 공통으로 아래 필드 구조를 따르며, `data` 필드만 도메인별로 다르게 구성됩니다.
+
 ```json
 {
   "schema_version": "1.0",
@@ -49,8 +79,8 @@
   "generated_at_utc": "2026-08-12T07:30:11.123+00:00",
   "domain": "ecommerce",
   "event_type": "order_created",
-  "service": {...},
-  "client": {...},
+  "service": { "..." },
+  "client": { "..." },
   "request": {
     "method": "POST",
     "path": "/api/orders",
@@ -61,21 +91,54 @@
     "latency_ms": 287,
     "response_bytes": 3590
   },
-  "data": {... domain specific ...}  <- 도메인별로 커스텀 구성
+  "data": { "...": "도메인별 커스텀 필드" }
 }
 ```
 
-## 지원 도메인 및 이벤트 정의
-- domain으로 카테고리 설정
-- 각 도메인들을 이벤트 비율 조정, 시간대별로 발생량을 조절, 주요 필드 설정
+### 지원 도메인
 
 | DOMAIN | 주요 이벤트 예시 |
 |---|---|
 | `ecommerce` | product_view, search, add_to_cart, checkout, order_created, payment_completed |
 | `finance` | account_login, balance_inquiry, card_payment, transfer, deposit, withdrawal |
 | `smartfactory` | sensor_reading, equipment_state, quality_inspection, alarm, maintenance_event |
-| `game` | login, session_heartbeat, match_started, match_finished, item_purchase, quest_completed |    
+| `game` | login, session_heartbeat, match_started, match_finished, item_purchase, quest_completed |
 
+### 실제와 유사한 발생 패턴 시뮬레이션
+
+단순 랜덤 생성이 아닌, 아래 조건을 고려한 시간대별 발생량 조절을 지원합니다.
+
+- 시간대별 가중치
+- 평일 / 주말 가중치
+- 간헐적 트래픽 상승(버스트) 반영
+
+| DOMAIN | 패턴 |
+|---|---|
+| ecommerce | 점심/저녁 시간대 증가, 주말 감소 |
+| finance | 평일 주간 시간 증가, 주말 감소 |
+| smartfactory | 24시간 비교적 일정, 교대/주말에 변화 |
+| game | 저녁/야간 피크, 주말 증가세 |
+
+### 주요 환경변수
+
+| 변수명 | 설명 |
+|---|---|
+| `DOMAIN` | 생성할 로그 도메인 |
+| `DURATION_SECONDS` | 실행 지속 시간(초) |
+| `MAX_EVENTS` | 최대 생성 이벤트 수 (0 = 무제한) |
+| `BASE_RPS` | 기준 초당 이벤트 발생률 |
+| `TIME_SCALE` | 시간 흐름 배속 |
+| `CORRUPTION_RATE` | 의도적 손상 로그 비율 |
+| `OUTPUT_MODE` | 출력 방식 (stdout / file 등) |
+| `TIMEZONE` | 타임스탬프 기준 시간대 |
+| `FAKER_LOCALE` | 가짜 데이터 생성 로케일 |
+
+## 로드맵
+
+- [x] Terraform으로 Fargate 인프라 구성
+- [x] ECR 이미지 기반 ECS Task 실행 환경 구축
+- [ ] ECS Service를 통한 상시 실행 및 오토스케일링
+- [ ] Airflow와 연동하여 생성된 로그를 정제/적재하는 파이프라인 구축
 
 # 실제와 유사한 발생 간격
 - 고려 조건
@@ -90,3 +153,20 @@
     - 스마트팩토리 : 24시간 비교적 일정, 교대/주말 변화
     - 게임 : 저녁/야간 피크, 주말 증가세 
     - . . .
+
+
+# 오염 데이터
+- 비율 지정 => 0.03 => 각 이벤트에서 3% 비율로 오염 데이터 생산 => ETL에서 clean 작업 처리
+- 오염 유형
+```
+missing_field
+null_required
+wrong_type
+invalid_timestamp
+numeric_outlier
+invalid_enum
+negative_latency
+duplicate
+malformed_json
+```
+
