@@ -1,6 +1,8 @@
 # log-gen
 
-AWS Fargate 기반의 실전형 로그 생성기입니다. 여러 도메인(이커머스, 금융, 스마트팩토리, 게임)에서 발생할 법한 "요청 → 처리 → 응답" 흐름의 애플리케이션 로그를 실제와 유사한 패턴으로 지속 생성하여, 이후 데이터 엔지니어링 파이프라인(Airflow 등)의 입력 데이터로 활용하는 것을 목표로 합니다.
+AWS Fargate 기반의 실전형 로그 생성기입니다. 여러 도메인(이커머스, 금융, 스마트팩토리, 게임)에서 발생할 법한 `요청 → 처리 → 응답` 흐름의 애플리케이션 로그를 실제와 유사한 패턴으로 지속 생성하며, Kinesis Data Streams(KDS)와 Kinesis Data Firehose(구 KDF)를 통해 S3에 적재하는 스트리밍 수집 파이프라인을 구축했습니다. 
+
+- Bronze 레이어(원본 보존)를 시작으로 Silver, Gold로 이어지는 `메달리온 아키텍처(Medallion Architecture)`를 적용하여, 이후 데이터 엔지니어링 파이프라인(Airflow 등 오케스트레이션 도구)의 입력 데이터로 활용하는 것을 목표로 합니다.
 
 ## 목표
 
@@ -38,18 +40,22 @@ AWS Fargate 기반의 실전형 로그 생성기입니다. 여러 도메인(이�
 
 ```
 infra/
-├── variables.tf   # 리전, 프로젝트명, CPU/MEM 등 입력 변수
-├── version.tf     # Terraform / AWS Provider 버전 제약
-├── provider.tf    # AWS Provider 설정 (region 등)
-├── locals.tf      # 공통값, 태그, 프로젝트명 등 계산된 상수
-├── vpc.tf         # VPC, Subnet, IGW, RT, AZ (NAT 우선 제외)
-├── sg.tf          # 보안그룹 (우선 외부 인바운드 미허용)
-├── iam.tf         # ECS Task Execution Role / Task Role
-├── ecr.tf         # 로그 생성기 컨테이너 이미지 저장소
-├── ecs.tf         # ECS 클러스터, Task Definition, Service
-├── logs.tf        # CloudWatch Log Group 설정
-└── outputs.tf     # ECR URI, 서비스명, 로그 그룹명 등 출력
+├── variables.tf    # 리전, 프로젝트명, CPU/MEM 등 입력 변수
+├── version.tf      # Terraform / AWS Provider 버전 제약
+├── provider.tf     # AWS Provider 설정 (region 등)
+├── locals.tf       # 공통값, 태그, 프로젝트명 등 계산된 상수
+├── vpc.tf          # VPC, Subnet, IGW, RT, AZ (NAT 우선 제외)
+├── sg.tf           # 보안그룹 (우선 외부 인바운드 미허용)
+├── iam.tf          # ECS Task Execution Role / Task Role, Firehose Role
+├── ecr.tf          # 로그 생성기 컨테이너 이미지 저장소
+├── ecs.tf          # ECS 클러스터, Task Definition, Service
+├── kinesis.tf       # Kinesis Data Stream (KDS)
+├── firehose.tf      # Kinesis Data Firehose (KDF) 배달 스트림
+├── s3.tf            # Bronze 레이어 데이터 저장 버킷
+├── logs.tf          # CloudWatch Log Group 설정
+└── outputs.tf       # ECR URI, 서비스명, 로그 그룹명 등 출력
 ```
+
 
 ### 실행 명령어
 
