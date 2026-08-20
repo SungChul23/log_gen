@@ -27,7 +27,7 @@ resource "aws_kinesis_firehose_delivery_stream" "logs" {
     # compression_format = "GZIP" # GZIP으로 압축
 
     # S3 버킷 및 S3 오류 출력 접두사 시간대
-    custom_time_zone = "Aisa/Seoul" 
+    custom_time_zone = "Asia/Seoul" 
 
     # 아래 처럼 구성 => partition pruning => Athena/opensearch/Glue/spark등 열기반으로 데이터 추출 유용
     # S3 버킷 접두사
