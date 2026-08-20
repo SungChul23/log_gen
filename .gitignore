@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+venv/
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+crash.log
+crash.*.log
+
+# Terraform provider 바이너리 (LICENSE.txt 포함된 그 폴더)
+infra/.terraform/providers/
+
+# VSCode
+.vscode/*
+!.vscode/settings.json
+
+# 로그/데이터 산출물 (필요에 따라 조정)
+output/
+log_sample/*.jsonl
+
+# OS
+.DS_Store
+Thumbs.db
+.vscode/settings.json
