@@ -81,22 +81,59 @@ Fargate → Kinesis → Firehose → S3 확인 (jsonl, gzip)
 # 수정은 표기 않함
 ├─infra
 │  │  ecr.tf            # 유지
-│  │  ecs.tf            # 유지
-│  │  iam.tf            
-│  │  locals.tf         # 수정 3
-│  │  logs.tf
-│  │  outputs.tf
-│  │  provider.tf        # 수정 1
-│  │  sg.tf
-│  │  variables.tf       # 수정 2
-│  │  version.tf         # 유지
-│  │  vpc.tf             # 유지
+│  │  ecs.tf            # 9. 수정
+│  │  iam.tf            # 6/8. 수정 (6.firehose 관련, 8.ecs-task에서 kinesis put 처리) 
+│  │  locals.tf         # 3. 수정
+│  │  logs.tf           # 유지
+│  │  outputs.tf        # 10. 수정
+│  │  provider.tf       # 1. 수정
+│  │  sg.tf             # 유지
+│  │  variables.tf      # 2. 수정 
+│  │  version.tf        # 유지
+│  │  vpc.tf            # 유지
 │  │  
-│  ├─ kinesis.tf         # 신규 4
-│  ├─ firehose.tf        # 신규 5
-│  ├─ s3.tf              # 신규 6
+│  ├─ kinesis.tf        # 4. 신규
+│  ├─ firehose.tf       # 7. 신규
+│  ├─ s3.tf             # 5. 신규
 ```
 
-# 파이썬 검토
+# 파이썬 검토 (kinesis로 전송 조정)
+- 패키지
+       ```
+       Faker
+       boto3  # AWS SDK 패키지
+       ```
+       - 로컬 PC에 boto3 설치
+       ```
+              pip install boto3
+       ```
+- config.py
+       - ecs 세팅한 환경변수 전달
+- output.py
+       - 출력 방향에 kinesis 추가
+- main.py
+       - 생성자 매개변수 조정
+
+
 
 # bat/shell 검토
+- 코드 수정 => 이미지 수정 => ecr 업데이트 => setup.bat/sh
+```
+# setup.bat
+docker build --no-cache --platform linux/amd64 -t "%REPO%:latest" "%GENERATOR%"
+
+# setup.sh
+docker build --no-cache --platform linux/amd64 -t "$REPO:latest" "$GENERATOR"
+```
+
+# 브론즈 데이터 생성
+- 명령 옵션
+```
+ecommerce       도메인
+5               5초 실행
+5               기본 5 RPS
+0.05            오염 데이터 5%
+1               Fargate Task 1개
+ap-northeast-2  서울 리전
+1               Time Scale 1배
+```
