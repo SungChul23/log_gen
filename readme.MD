@@ -36,11 +36,12 @@ Fargate Generator ────┤
 
 |단계|의미|뉘앙스|
 |--|--|--|
-|Bronze|가공되지 않은 기록|무슨 일이 일어났는가?|
-|Silver|분석 가능한 깔끔한 테이블)|누가, 언제, 무엇을 구매했는가?|
-|Gold|보고서에 바로 들어갈 숫자|이번 시간 매출은 얼마인가?|
+|Bronze|가공되지 않은 기록<br>raw 데이터|무슨 일이 일어났는가?, gzip|
+|Silver|전처리, 클리닝등 데이터 정제과정<br>분석 가능한 깔끔한 테이블|누가, 언제, 무엇을 구매했는가?, parquet|
+|Gold|보고서에 바로 들어갈 숫자, 분석, 대시보드등<br> 즉시 사용(비즈니스)할 수준의 데이터레벨|이번 시간 매출은 얼마인가?, parquet|
 
-# 인프라 수정 및 추가
+
+# 수정 및 추가 workflow 
 ```
 [1] Terraform 인프라 생성
        │
@@ -74,3 +75,28 @@ Fargate Generator ────┤
 Fargate → Kinesis → Firehose → S3 확인 (jsonl, gzip)
 ```
 
+# 인프라 수정 및 추가
+- tree /f 명령으로 구성도에서 인프라만 추출
+```
+# 수정은 표기 않함
+├─infra
+│  │  ecr.tf            # 유지
+│  │  ecs.tf            # 유지
+│  │  iam.tf            
+│  │  locals.tf
+│  │  logs.tf
+│  │  outputs.tf
+│  │  provider.tf
+│  │  sg.tf
+│  │  variables.tf
+│  │  version.tf         # 유지
+│  │  vpc.tf             # 유지
+│  │  
+│  ├─ kinesis.tf         # 신규
+│  ├─ firehose.tf        # 신규
+│  ├─ s3.tf              # 신규
+```
+
+# 파이썬 검토
+
+# bat/shell 검토
