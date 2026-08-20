@@ -14,5 +14,5 @@ locals {
 
   # [브론즈 추가] - 키네시스 관련
   kinesis_stream_name = "${var.project_name}-kinesis"
-  firehose_name = "${var.project_name}-firehose"
+  firehose_name       = "${var.project_name}-firehose"
 }
