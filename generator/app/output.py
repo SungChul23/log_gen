@@ -7,6 +7,8 @@ from __future__ import annotations
 import json
 # 환경변수와 OS 개행 문자 사용
 import os
+# 표준 오류 출력에 진단 메시지를 남기기 위해 사용
+import sys
 # 로그 파일 경로와 디렉터리를 안전하게 처리
 from pathlib import Path
 # 파일 핸들의 타입을 명확하게 지정
@@ -48,7 +50,20 @@ class JsonlOutput:
             
         # [브론즈 추가]
         if self.kinesis_enabled:
-            self._kinesis = boto3.client("kinesis")
+            # 진단용: 실제로 어떤 리전/스트림을 쓰는지 초기화 시점에 한 번 출력
+            region = os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION")
+            print(
+                f"[kinesis-init] region={region!r} stream={self.kinesis_stream_name!r}",
+                file=sys.stderr, flush=True,
+            )
+            try:
+                # 리전을 환경변수에서 명시적으로 가져와 boto3에 전달
+                # (컨테이너 환경엔 ~/.aws/config가 없어 리전 자동탐지가 안 될 수 있음)
+                self._kinesis = boto3.client("kinesis", region_name=region)
+            except Exception as e:
+                # 클라이언트 생성 자체가 실패하면 여기서 바로 드러나게 함
+                print(f"[kinesis-init-error] {e}", file=sys.stderr, flush=True)
+                self._kinesis = None
 
     # 이벤트 한 건을 JSON 문자열로 변환해 지정된 출력 대상으로 전송
     def emit(self, event: dict, malformed_json: bool = False) -> None:
@@ -74,11 +89,15 @@ class JsonlOutput:
             
         # [브론즈 추가] 키네시스 전송
         if self._kinesis is not None:
-            self._kinesis.put_record(
-                StreamName      = self.kinesis_stream_name,
-                Data            = (line + "\n").encode('utf-8'),
-                PartitionKey    = str(event.get("domain", "default"))
-            )
+            try:
+                self._kinesis.put_record(
+                    StreamName      = self.kinesis_stream_name,
+                    Data            = (line + "\n").encode('utf-8'),
+                    PartitionKey    = str(event.get("domain", "default"))
+                )
+            except Exception as e:
+                # 실패를 조용히 삼키지 않고 stderr로 드러냄 (CloudWatch에서 바로 확인 가능)
+                print(f"[kinesis-put-error] {e}", file=sys.stderr, flush=True)
             
 
     # 열려 있는 로그 파일 핸들을 안전하게 닫음
