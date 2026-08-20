@@ -22,6 +22,9 @@ resource "aws_ecs_task_definition" "generator" {
   # 권한 (ecs 테스크(기본), push, 로그기록)
   execution_role_arn = aws_iam_role.ecs_execution.arn
 
+  # [브론즈 추가]
+  task_role_arn = aws_iam_role.ecs_task_kinesis.arn
+
   # 서버리스 => 컴퓨팅 자원의 운영쳬게
   runtime_platform {
     operating_system_family = "LINUX"  # 컨테이너 실행 환경
@@ -83,7 +86,14 @@ resource "aws_ecs_task_definition" "generator" {
 
         # 이번 실행을 식별하는 ID - "manual"은 수동 트리거임을 나타냄
         # (스케줄러나 CI가 트리거하면 다른 값으로 구분할 수 있게 설계된 것으로 추정)
-        { name = "RUN_ID", value = "manual" }
+        { name = "RUN_ID", value = "manual" },
+
+        # [브론즈 추가]
+        # kinesis 활성황
+        { name = "KINESIS_ENABLED", value = "ecommerce" },
+
+        # KDS 이름
+        { name = "KINESIS_STREAM_NAME", value = "aws_kinesis_stream.logs" }
       ]
 
 
