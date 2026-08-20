@@ -98,3 +98,39 @@ resource "aws_iam_role_policy" "firehose" {
   role = aws_iam_role.firehose.name       # Role 리소스의 .name 속성 참조
   policy = data.aws_iam_policy_document.firehose_s3.json  # Policy document의 .json 속성 참조
 }
+
+
+# ecs -> task 에서 kinesis 전송시 role을 별도 추가
+# ecs task role
+# execute role (기존, task 실행 권한)
+# kinesis role (신규추가, kinesis로 데이터 putRecord 권한)
+
+# ecs task -> data -> kinesis 권한 부여하기위한 role 구성
+# 기본적으로 ecs_tasks_assume 부여
+resource "aws_iam_role" "ecs_task_kinesis" {
+  name = "${var.project_name}-ecs-task"
+  assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume.json
+}
+
+# ecs task -> data -> kinesis 권한 조회
+data "aws_iam_policy_document" "ecs_task_kinesis" {
+  statement {
+    effect = "Allow"
+
+    actions = [ 
+      "kinesis:PutRecords",
+      "kinesis:PutRecord"
+    ]
+
+    resources = [ 
+      aws_kinesis_stream.logs.arn
+    ]
+  }
+}
+
+# role에 연결하여 정책 구성
+resource "aws_iam_role_policy" "ecs_task_kinesis" {
+  name = "${var.project_name}-kinesis-write"
+  role = aws_iam_role.ecs_task_kinesis.id
+  policy = data.aws_iam_policy_document.ecs_task_kinesis.json
+}
