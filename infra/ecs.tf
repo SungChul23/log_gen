@@ -90,10 +90,10 @@ resource "aws_ecs_task_definition" "generator" {
 
         # [브론즈 추가]
         # kinesis 활성황
-        { name = "KINESIS_ENABLED", value = "ecommerce" },
+        { name = "KINESIS_ENABLED", value = "true" },
 
         # KDS 이름
-        { name = "KINESIS_STREAM_NAME", value = "aws_kinesis_stream.logs" }
+        { name = "KINESIS_STREAM_NAME", value = aws_kinesis_stream.logs.name }
       ]
 
 
