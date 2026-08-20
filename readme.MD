@@ -333,7 +333,7 @@ pip install -r generator/requirements.txt
 
   Task started.
   Follow generated logs:
-    aws logs tail "/ecs/de-ai-25-loggen" --follow --region "ap-northeast-2"
+    aws logs tail "/ecs/de-ai-22-loggen" --follow --region "ap-northeast-2"
 
 
 ```
