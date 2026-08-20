@@ -41,28 +41,62 @@ variable "public_subnet_cidrs" {
 
 # Fargate task CPU
 variable "task_cpu" {
-  deprecated = "CPU Unit -> 512 == 0.5 vCPU"
+  description = "CPU Unit -> 512 == 0.5 vCPU"
   type       = number
   default    = 512
 }
 
 # Fargate task MEM
 variable "task_mem" {
-  deprecated = "mem mib"
+  description = "mem mib"
   type       = number
   default    = 1024
 }
 
 # Cloudwatch Log 보관 일수
 variable "log_retention_days" {
-  deprecated = "로그 1주일 보관"
+  description = "로그 1주일 보관"
   type       = number
   default    = 7
 }
 
 # ECS Task가 ECR 이미지 사용시 테그 -> latest
 variable "image_tag" {
-  deprecated = "task가 정의될때 참고하는 tag명"
+  description = "task가 정의될때 참고하는 tag명"
   type       = string
   default    = "latest"
 }
+
+##############[브론즈 추가]###############
+# KDS
+# shard의 갯수
+# 프로비저닝 할당 <-> 온디멘드
+variable "KDS_shard_count" {
+  description = "KDS 샤드 수"
+  type = number
+  default = 1
+
+}
+# 데이터 보관 기관
+variable "kinesis_retention_hour" {
+  description = "샤드 내 데이터 보관기관"
+  type = number
+  default = 24
+}
+
+# KDF -> Amazone Data FireHose
+# 어느정도 데이터가 모여야 보낼건지 (최소 1 MiB, 최대 128 MiB, 5 MiB을(를) 권장)
+variable "firehose_buffer_size" {
+  description = "해당 크기만큼 데이터가 쌓이면 강제 전송"
+  type = number
+  default = 1
+
+}
+# 몇초동안 모으고 보낼건지 (최소 0초 -> 최대 900초)
+variable "firehose_buffer_interval" {
+  description = "해당 시간만큼 데이터가 쌓이면 강제 전송"
+  type = number
+  default = 60
+
+}
+####################################
