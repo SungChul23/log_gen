@@ -21,7 +21,7 @@ resource "aws_iam_role" "ecs_execution" {
 
 # 3. Role, 정책 연결 마무리, 실제 실행시 필요한 권한 부여!!
 resource "aws_iam_role_policy_attachment" "ecs_execution" {
-  role       = aws_iam_role.ecs_execution.name
+  role = aws_iam_role.ecs_execution.name
 
   # AWS 관리형 정책을 사전에 AmazonECSTaskExecutionRolePolicy 구성
   # -> [가능] Fargate는 ECR TASK(로그 생성)를 생성하여 CloudWatch에 저장
@@ -65,28 +65,28 @@ data "aws_iam_policy_document" "firehose_s3" {
   # kinesis 읽기 권한 관련  
   statement {
     effect = "Allow"
-    actions = [ 
+    actions = [
       "kinesis:DescribeStream",
       "kinesis:GetShardIterator",
       "kinesis:GetRecords",
       "kinesis:ListShards"
     ]
-    resources = [ 
+    resources = [
       aws_kinesis_stream.logs.arn
-    ] 
+    ]
   }
   # s3 저장 권한 관련
   statement {
     effect = "Allow"
-    actions = [ 
+    actions = [
       "s3:AbortMultipartUpload",
       "s3:GetBucketLocation",
       "s3:ListBucket",
       "s3:PutObject"
     ]
-    resources = [ 
-      aws_s3_bucket.data.arn,           # 해당 버킷
-      "${aws_s3_bucket.data.arn}/*"     # 해당 버킷 이하 모든 경로
+    resources = [
+      aws_s3_bucket.data.arn,       # 해당 버킷
+      "${aws_s3_bucket.data.arn}/*" # 해당 버킷 이하 모든 경로
     ]
   }
 }
@@ -94,9 +94,9 @@ data "aws_iam_policy_document" "firehose_s3" {
 # --- 3단계: 1단계에서 만든 Role에 2단계에서 정의한 권한(policy)을 실제로 연결 ---
 # 이 단계가 완료돼야 비로소 firehose Role이 "Firehose를 맡을 수 있고 + Kinesis/S3에 접근 가능한" 상태가 됨
 resource "aws_iam_role_policy" "firehose" {
-  name = "${var.project_name}-firehose-s3-policy"
-  role = aws_iam_role.firehose.name       # Role 리소스의 .name 속성 참조
-  policy = data.aws_iam_policy_document.firehose_s3.json  # Policy document의 .json 속성 참조
+  name   = "${var.project_name}-firehose-s3-policy"
+  role   = aws_iam_role.firehose.name                    # Role 리소스의 .name 속성 참조
+  policy = data.aws_iam_policy_document.firehose_s3.json # Policy document의 .json 속성 참조
 }
 
 
@@ -108,7 +108,7 @@ resource "aws_iam_role_policy" "firehose" {
 # ecs task -> data -> kinesis 권한 부여하기위한 role 구성
 # 기본적으로 ecs_tasks_assume 부여
 resource "aws_iam_role" "ecs_task_kinesis" {
-  name = "${var.project_name}-ecs-task"
+  name               = "${var.project_name}-ecs-task"
   assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume.json
 }
 
@@ -117,12 +117,12 @@ data "aws_iam_policy_document" "ecs_task_kinesis" {
   statement {
     effect = "Allow"
 
-    actions = [ 
+    actions = [
       "kinesis:PutRecords",
       "kinesis:PutRecord"
     ]
 
-    resources = [ 
+    resources = [
       aws_kinesis_stream.logs.arn
     ]
   }
@@ -130,7 +130,7 @@ data "aws_iam_policy_document" "ecs_task_kinesis" {
 
 # role에 연결하여 정책 구성
 resource "aws_iam_role_policy" "ecs_task_kinesis" {
-  name = "${var.project_name}-kinesis-write"
-  role = aws_iam_role.ecs_task_kinesis.id
+  name   = "${var.project_name}-kinesis-write"
+  role   = aws_iam_role.ecs_task_kinesis.id
   policy = data.aws_iam_policy_document.ecs_task_kinesis.json
 }
