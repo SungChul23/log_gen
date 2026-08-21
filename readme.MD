@@ -5,6 +5,11 @@
   - Streamming Ingestion => `Streamming Processing + Medalion Architecture`
   - step 1
     - log generator => kinesis(input) => flink(자바,파이썬(pyflink), pom.xml,maven) => kinesis(outut) => firehose => s3 silver
+    - flink, kinesis(outut), firehose 3개 리소스 생성
+    - s3 silver : 기존 버킷 하위에 구성
+      - jsonl 저장
+      - parquet 저장 -> Glue 스키마 구성하여 연동
+
   - step 2
     - log generator => kinesis(input) => lambda => kinesis(outut) => firehose => s3 silver
 
@@ -27,9 +32,6 @@ Log Generator → KDS(단일 스트림) ──┤
   - [배치]   처리 엔진 → AWS Glue(Spark), Amazon EMR(Spark/Hadoop), AWS Batch
              오케스트레이터(언제 실행할지 지휘) → Airflow(MWAA), Step Functions
 
-             
-
-
 - 특징
 
    - 실시간 스트림 처리: Kinesis에서 들어오는 데이터를 계속 읽으면서 즉시 처리
@@ -40,3 +42,41 @@ Log Generator → KDS(단일 스트림) ──┤
    - Exactly-once 처리 지원: 중복이나 누락을 최소화하는 신뢰성 높은 스트림 처리 가능
    - 대용량 처리에 적합: 지속적인 고속 이벤트 처리에 Lambda보다 유리
    - 복잡한 처리 가능: 필터링, 변환, 집계, 조인, 이상 탐지 등에 적합
+
+# 데이터 저장소
+```
+S3 Bucket
+├── bronze/
+│   └── year=.../month=.../day=.../hour=...
+├── silver/
+│   └── year=.../month=.../day=.../hour=...
+├── flink/
+│   └── applications/
+│       └── flink-silver-xxxxx.zip <- flink 처리를 수행하는 앱 (.py, .jar, .zip, arn)
+└── errors/
+    ├── bronze/
+    │   └── ...
+    └── silver/
+        └── ...
+
+```
+
+# 인프라 수정
+## 종합
+
+
+
+
+# 인프라 수정
+
+| 구분         | 파일              | 변경 내용                                            |
+| ---------- | --------------- | ------------------------------------------------ |
+| **수정**     | `locals.tf`     | Silver Kinesis/Flink/Firehose 이름 추가              |
+| **수정**     | `variables.tf`  | Flink Runtime, Parallelism, Silver Shard 등 변수 추가 |
+| **수정**     | `firehose.tf`   | Bronze 오류 경로를 `errors/bronze/`로 정리               |
+| **수정**     | `outputs.tf`    | Silver/Flink 관련 Output 추가                        |
+| ---------- | --------------- | ------------------------------------------------ |
+| **신규**     | `iam-flink.tf`  | Flink + Silver Firehose IAM                      |
+| **신규**     | `silver.tf`     | Silver Kinesis + Silver Firehose 생성              |
+| **신규**     | `flink.tf`      | Managed Flink + `flink/`에 코드 업로드                 |
+| **신규**     | `flink-logs.tf` | Flink CloudWatch 로그                              |
