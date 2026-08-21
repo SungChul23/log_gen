@@ -1,4 +1,4 @@
-resource "aws_kinesis_stream" "logs" {
+resource "aws_kinesis_stream" "bronze" {
   name             = local.kinesis_stream_name
   shard_count      = var.KDS_shard_count
   retention_period = var.kinesis_retention_hour
