@@ -8,7 +8,7 @@ resource "aws_kinesis_firehose_delivery_stream" "logs" {
 
   # 입력소스 (키네시스, 역활 설정)
   kinesis_source_configuration {
-    kinesis_stream_arn = aws_kinesis_stream.logs.arn
+    kinesis_stream_arn = aws_kinesis_stream.bronze.arn
     role_arn           = aws_iam_role.firehose.arn
   }
 

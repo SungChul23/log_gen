@@ -33,7 +33,7 @@ data "aws_iam_policy_document" "flink" {
       "kinesis:ListShards"
     ]
     resources = [
-      aws_kinesis_stream.logs.arn
+      aws_kinesis_stream.bronze.arn
     ]
   }
   # 실버 레벨에 존재하는 kinesis로 데이터 전송(쓰기, 출력스트림)에 대한 권한

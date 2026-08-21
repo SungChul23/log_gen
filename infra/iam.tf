@@ -72,7 +72,7 @@ data "aws_iam_policy_document" "firehose_s3" {
       "kinesis:ListShards"
     ]
     resources = [
-      aws_kinesis_stream.logs.arn
+      aws_kinesis_stream.bronze.arn
     ]
   }
   # s3 저장 권한 관련
@@ -123,7 +123,7 @@ data "aws_iam_policy_document" "ecs_task_kinesis" {
     ]
 
     resources = [
-      aws_kinesis_stream.logs.arn
+      aws_kinesis_stream.bronze.arn
     ]
   }
 }

@@ -93,7 +93,7 @@ resource "aws_ecs_task_definition" "generator" {
         { name = "KINESIS_ENABLED", value = "true" },
 
         # KDS 이름
-        { name = "KINESIS_STREAM_NAME", value = aws_kinesis_stream.logs.name }
+        { name = "KINESIS_STREAM_NAME", value = aws_kinesis_stream.bronze.name }
       ]
 
 

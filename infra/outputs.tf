@@ -42,10 +42,10 @@ output "cloudwatch_log_group" {
 
 # [브론즈 추가]
 output "kinesis_stream_name" {
-  value = aws_kinesis_stream.logs.name
+  value = aws_kinesis_stream.bronze.name
 }
 output "kinesis_stream_arn" {
-  value = aws_kinesis_stream.logs.arn
+  value = aws_kinesis_stream.bronze.arn
 }
 output "firehose_name" {
   value = aws_kinesis_firehose_delivery_stream.logs.name
