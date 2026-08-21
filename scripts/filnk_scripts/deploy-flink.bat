@@ -1,7 +1,7 @@
 @echo off
 setlocal
-set "ROOT=%~dp0.."
-call "%ROOT%\scripts\build-flink.bat"
+set "ROOT=%~dp0..\.."
+call "%ROOT%\scripts\filnk_scripts\build-flink.bat"
 if errorlevel 1 exit /b 1
 pushd "%ROOT%\infra"
 terraform init -upgrade
