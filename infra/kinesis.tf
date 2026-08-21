@@ -7,7 +7,7 @@ resource "aws_kinesis_stream" "logs" {
   stream_mode_details {
     stream_mode = "PROVISIONED"
   }
-  
+
   tags = {
     DataLayer = "bronze"
   }
