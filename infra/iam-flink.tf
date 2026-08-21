@@ -40,26 +40,23 @@ data "aws_iam_policy_document" "flink" {
     sid    = "WriteSilverKinesis"
     effect = "Allow"
     actions = [
-      #"kinesis:DescribeStream",
       "kinesis:PutRecords",
       "kinesis:GetRecords"
-      #"kinesis:ListShards"
     ]
     resources = [
       aws_kinesis_stream.silver.arn
     ]
   }
+  # s3에 저장된 flink 어플리케이션 코드 zip 형태로 되어있음
   statement {
     sid    = "ReadFlinkCode"
     effect = "Allow"
     actions = [
-      "kinesis:DescribeStream",
-      "kinesis:GetShardIterator",
-      "kinesis:GetRecords",
-      "kinesis:ListShards"
+      "S3:GetObject",
+      "S3:GetObjectVersion"
     ]
     resources = [
-      aws_kinesis_stream.logs.arn
+      "${aws_s3_bucket.data.arn}/flink/*"
     ]
   }
   statement {
