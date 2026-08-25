@@ -65,7 +65,7 @@ resource "aws_kinesisanalyticsv2_application" "silver" {
 
         property_map = {
           "stream.arn"                 = aws_kinesis_stream.bronze.arn  # 읽어올 Kinesis 스트림 ARN
-          "aws.region"                  = var.aws_region                 # 리전
+          "aws.region"                 = var.aws_region                 # 리전
           "flink.source.init.position" = var.flink_source_init_position # LATEST 또는 TRIM_HORIZON
         }
       }
