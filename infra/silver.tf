@@ -55,7 +55,7 @@ resource "aws_kinesis_firehose_delivery_stream" "silver" {
       input_format_configuration {
         deserializer {
           open_x_json_ser_de {
-            case_insensitive = true
+            case_insensitive                         = true
             convert_dots_in_json_keys_to_underscores = false
           }
         }
@@ -65,10 +65,10 @@ resource "aws_kinesis_firehose_delivery_stream" "silver" {
       schema_configuration {
         # DB , Table, Role, Region, Version
         database_name = aws_glue_catalog_database.silver.name
-        table_name = aws_glue_catalog_table.silver.name
-        role_arn = aws_iam_role.firehose_silver.arn
-        region = var.aws_region
-        version_id = "LATEST"
+        table_name    = aws_glue_catalog_table.silver.name
+        role_arn      = aws_iam_role.firehose_silver.arn
+        region        = var.aws_region
+        version_id    = "LATEST"
       }
 
       # 출력 Snappy 압축을 통한 parquet
@@ -79,7 +79,7 @@ resource "aws_kinesis_firehose_delivery_stream" "silver" {
           }
         }
       }
-    } 
+    }
 
 
     # 아래 처럼 구성 => partition pruning => Athena/opensearch/Glue/spark등 열기반으로 데이터 추출 유용

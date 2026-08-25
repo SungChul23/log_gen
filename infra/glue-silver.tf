@@ -7,10 +7,10 @@
 
 # 1. 데이터베이스 구성
 resource "aws_glue_catalog_database" "silver" {
-    # SQL문 고려하여 _로 표기
-    # 디비명
-    name = "${lower(replace(var.project_name, "-","_"))}_silver_glue_db"
-    #name = "${var.project_name}-silver-glue-db"
+  # SQL문 고려하여 _로 표기
+  # 디비명
+  name = "${lower(replace(var.project_name, "-", "_"))}_silver_glue_db"
+  #name = "${var.project_name}-silver-glue-db"
 }
 
 # 2. 테이블 구성, 데이터베이스 내부에 테이블을 수십개 정의 가능
@@ -33,7 +33,7 @@ resource "aws_glue_catalog_table" "silver" {
     # 파티션 활성화 (s3://버킷/silver/year=2026/....), 파티션화 되어 저장되어 있음 (partition projection)
     "projection.enabled" = "true"
     # 파티션 정보 -> year, month, day, hour -> 타입, 값 범위 지정
-    "projection.year.type" = "integer"
+    "projection.year.type"  = "integer"
     "projection.year.range" = "2026,2040" # 뒤에 2040는 설정값, 2026은 현재로 가정
 
     # 월
@@ -72,8 +72,8 @@ resource "aws_glue_catalog_table" "silver" {
 
     # parquet 파일과 Glue/Athena 등 테이블간 사이에서 데이터 구조 해석하는 역할
     ser_de_info {
-        name = "silver-parquet"
-        serialization_library = "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe"
+      name                  = "silver-parquet"
+      serialization_library = "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe"
     }
     # silver 공통 스키마 (도메인별 동일)
     # { "schema_version":"1.0","record_type":"application_log","event_id":"a7a0a4e9-e71e-4028-b3eb-0f250bc2e713","trace_id":"2ffbd18b722f46dea9bfaf4ad6c59fce","run_id":"loggen-2684615959-10518","occurred_at":"2026-08-25T09:59:31.059+09:00","generated_at_utc":"2026-08-25T00:59:31.059+00:00","domain":"ecommerce","event_type":"product_view", ...}
@@ -126,10 +126,10 @@ resource "aws_glue_catalog_table" "silver" {
     # client 중첩 스키마
     # "client":{"ip":"200.202.139.62","user_agent":"WhitelabelApp/4.8.1 Android","device_id":"367d6a0dffb04145"}
     columns {
-      name = "client"     
+      name = "client"
       type = "struct<ip:string,user_agent:string,device_id:string>"
     }
-    
+
     # request 중첩 스키마
     # "request":{"method":"GET","path":"/api/products/prd_83053","request_bytes":746}0f250bc2e713
     columns {
