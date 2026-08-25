@@ -47,6 +47,41 @@ resource "aws_kinesis_firehose_delivery_stream" "silver" {
     # S3 버킷 및 S3 오류 출력 접두사 시간대
     custom_time_zone = "Asia/Seoul"
 
+    # Glue 추가
+    data_format_conversion_configuration {
+      enabled = true
+
+      # 입력원 flink에서 나온 json
+      input_format_configuration {
+        deserializer {
+          open_x_json_ser_de {
+            case_insensitive = true
+            convert_dots_in_json_keys_to_underscores = false
+          }
+        }
+      }
+
+      # json -> Parquet 변환시 참고할 스키마
+      schema_configuration {
+        # DB , Table, Role, Region, Version
+        database_name = aws_glue_catalog_database.sliver
+        table_name = 
+        role_arn =
+        region = var.aws_region
+        version_id = "LATEST"
+      }
+
+      # 출력 Snappy 압축을 통한 parquet
+      output_format_configuration {
+        serializer {
+          parquet_ser_de {
+            compression = "SNAPPY"
+          }
+        }
+      }
+    } 
+
+
     # 아래 처럼 구성 => partition pruning => Athena/opensearch/Glue/spark등 열기반으로 데이터 추출 유용
     # S3 버킷 접두사
     # bronze/year=2026/month=08/day=20/hour=11/.. 이렇게 파티션 가능 -> 검색 속도 빨라짐
