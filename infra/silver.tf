@@ -64,9 +64,9 @@ resource "aws_kinesis_firehose_delivery_stream" "silver" {
       # json -> Parquet 변환시 참고할 스키마
       schema_configuration {
         # DB , Table, Role, Region, Version
-        database_name = aws_glue_catalog_database.sliver
-        table_name = 
-        role_arn =
+        database_name = aws_glue_catalog_database.silver.name
+        table_name = aws_glue_catalog_table.silver.name
+        role_arn = aws_iam_role.firehose_silver.arn
         region = var.aws_region
         version_id = "LATEST"
       }
