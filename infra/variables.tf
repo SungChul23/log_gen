@@ -89,7 +89,7 @@ variable "kinesis_retention_hour" {
 variable "firehose_buffer_size" {
   description = "해당 크기만큼 데이터가 쌓이면 강제 전송"
   type        = number
-  default     = 1
+  default     = 64
 
 }
 # 몇초동안 모으고 보낼건지 (최소 0초 -> 최대 900초)
