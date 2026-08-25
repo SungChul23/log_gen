@@ -19,3 +19,8 @@ data "aws_availability_zones" "available" {
 data "aws_caller_identity" "current" {
 
 }
+
+provider "aws" {
+  alias  = "flink_no_tags"
+  region = var.aws_region
+}
