@@ -31,3 +31,5 @@ log_sample/*.jsonl
 .DS_Store
 Thumbs.db
 .vscode/settings.json
+readme.MD
+flink/*
