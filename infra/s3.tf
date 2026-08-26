@@ -6,7 +6,7 @@ resource "aws_s3_bucket" "data" {
   bucket = "${var.project_name}-s3-bk-${data.aws_caller_identity.current.account_id}"
 
   # 버킷 삭제 될때 내부 데이터도 같이 삭제하게 할것인가 (강제)
-  force_destroy = true
+  force_destroy = false
 }
 
 # 외부 public 접근 차단 (내부에서만, 권한 있는 경우에만 접근)
